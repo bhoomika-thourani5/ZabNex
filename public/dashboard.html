@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | ZabNex</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline": "#71787b",
+                        "secondary": "#735c00",
+                        "primary-fixed": "#baeaf8",
+                        "surface-dim": "#dadada",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-primary-fixed-variant": "#1b4d58",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#003b46",
+                        "surface-tint": "#366571",
+                        "outline-variant": "#c0c8ca",
+                        "on-secondary-fixed-variant": "#574500",
+                        "tertiary-container": "#1a355c",
+                        "inverse-surface": "#2f3131",
+                        "secondary-container": "#fed65b",
+                        "on-surface": "#1a1c1c",
+                        "tertiary": "#001f44",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-primary": "#ffffff",
+                        "ink": "#222222",
+                        "on-tertiary-fixed": "#001b3d",
+                        "surface-bright": "#f9f9f9",
+                        "background": "#f9f9f9",
+                        "on-secondary-container": "#745c00",
+                        "on-tertiary-fixed-variant": "#2d476f",
+                        "surface": "#ffffff",
+                        "on-tertiary-container": "#859ecb",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "academic-red": "#EE3124",
+                        "tertiary-fixed": "#d6e3ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed": "#241a00",
+                        "on-error": "#ffffff",
+                        "success-green": "#2E8227",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-low": "#f3f3f3",
+                        "secondary-fixed": "#ffe088",
+                        "surface-alt": "#E9ECEF",
+                        "on-surface-variant": "#40484a",
+                        "on-primary-container": "#77a5b2",
+                        "primary": "#003b46",
+                        "primary-fixed-dim": "#9fcedc",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#aec7f6",
+                        "on-primary-fixed": "#001f26",
+                        "inverse-primary": "#9fcedc",
+                        "surface-container": "#eeeeee"
+                    },
+                    "fontFamily": {
+                        "display": ["Inter"],
+                        "body": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+  <style>
+      body {
+          background-color: #f9f9f9;
+          font-family: 'Inter', sans-serif;
+      }
+      .academic-card {
+          background: #ffffff;
+          border: 1px solid #e2e2e2;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      .btn-brand {
+          background-color: #003b46;
+          color: white;
+          transition: all 0.2s ease;
+      }
+      .btn-brand:hover {
+          background-color: #002c35;
+      }
+      .btn-brand-secondary {
+          background-color: #fed65b;
+          color: #241a00;
+          transition: all 0.2s ease;
+      }
+      .btn-brand-secondary:hover {
+          background-color: #e9c349;
+      }
+      .material-symbols-outlined {
+          font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .icon-outline {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .badge-category {
+          padding: 0.25rem 0.75rem;
+          border-radius: 9999px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+      }
+      .badge-event { background-color: #e0f2fe; color: #0284c7; }
+      .badge-scholarship { background-color: #f3e8ff; color: #9333ea; }
+      .badge-internship { background-color: #dcfce7; color: #16a34a; }
+      .badge-job { background-color: #dbeafe; color: #2563eb; }
+      .badge-announcement { background-color: #fee2e2; color: #dc2626; }
+      
+      [x-cloak] { display: none !important; }
+
+      /* Table styling overrides to match light theme */
+      th {
+          background-color: #f3f3f3;
+          color: #40484a;
+          font-weight: 600;
+          padding: 0.75rem 1rem;
+          text-align: left;
+          text-transform: uppercase;
+          font-size: 0.75rem;
+          letter-spacing: 0.05em;
+      }
+      td {
+          padding: 1rem;
+          border-bottom: 1px solid #e2e2e2;
+          color: #1a1c1c;
+      }
+      tr:last-child td {
+          border-bottom: none;
+      }
+      tr:hover td {
+          background-color: #f9f9f9;
+      }
+  </style>
+</head>
+<body x-data="dashboardApp()" x-init="initApp()" class="bg-background text-on-surface">
+
+  <!-- Header Banner -->
+  <div class="bg-primary text-white">
+    <div class="max-w-[1440px] mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-4">
+        <!-- Brand -->
+        <a class="flex items-center gap-2 font-bold text-xl hover:opacity-80" href="/index.html">
+          <div class="w-8 h-8">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-full h-full">
+              <path d="M25 30 H75 L25 70 H75" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M35 70 V30 L65 70 V30" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.4" />
+              <circle cx="50" cy="50" r="5" fill="#ffffff" />
+            </svg>
+          </div>
+          ZabNex
+        </a>
+        <div class="h-6 w-px bg-white/30 hidden md:block"></div>
+        <h1 class="text-lg font-semibold tracking-wide">Administration Dashboard</h1>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-white text-primary flex items-center justify-center font-bold" x-text="user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'"></div>
+          <div class="flex flex-col text-sm">
+            <span class="font-semibold leading-tight" x-text="user.full_name"></span>
+            <span class="text-white/70 text-xs leading-tight capitalize" x-text="user.role ? user.role.replace('_', ' ') : ''"></span>
+          </div>
+        </div>
+        <a href="/index.html" class="flex items-center gap-1 text-sm font-semibold hover:bg-white/10 px-3 py-1.5 rounded transition">
+          <span class="material-symbols-outlined icon-outline text-[18px]">arrow_back</span> Back to Feed
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-[1440px] mx-auto px-6 py-8" x-cloak>
+    <div class="row">
+      <!-- ================= SUPER ADMIN CONTROLS ================= -->
+      <template x-if="user.role === 'super_admin'">
+        <div class="w-full">
+          <!-- Metrics Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="academic-card p-6 flex flex-col items-center justify-center text-center rounded-xl">
+              <span class="material-symbols-outlined text-[32px] text-[#0284c7] mb-2">group</span>
+              <span class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Total Users</span>
+              <h2 class="text-3xl font-bold text-primary" x-text="analytics?.totals?.users || 0"></h2>
+            </div>
+            <div class="academic-card p-6 flex flex-col items-center justify-center text-center rounded-xl">
+              <span class="material-symbols-outlined text-[32px] text-[#16a34a] mb-2">dynamic_feed</span>
+              <span class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Total Posts</span>
+              <h2 class="text-3xl font-bold text-primary" x-text="analytics?.totals?.posts || 0"></h2>
+            </div>
+            <div class="academic-card p-6 flex flex-col items-center justify-center text-center rounded-xl">
+              <span class="material-symbols-outlined text-[32px] text-[#9333ea] mb-2">groups</span>
+              <span class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Societies</span>
+              <h2 class="text-3xl font-bold text-primary" x-text="analytics?.totals?.societies || 0"></h2>
+            </div>
+            <div class="academic-card p-6 flex flex-col items-center justify-center text-center rounded-xl">
+              <span class="material-symbols-outlined text-[32px] text-academic-red mb-2">event_available</span>
+              <span class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Total RSVPs</span>
+              <h2 class="text-3xl font-bold text-primary" x-text="analytics?.totals?.rsvps || 0"></h2>
+            </div>
+          </div>
+
+          <!-- Navigation Tabs -->
+          <div class="academic-card p-2 rounded-xl mb-6 flex gap-2 overflow-x-auto">
+            <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                    :class="superTab === 'users' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'users'">
+              <span class="material-symbols-outlined icon-outline text-[18px]">manage_accounts</span> User Management
+            </button>
+            <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                    :class="superTab === 'societies' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'societies'">
+              <span class="material-symbols-outlined icon-outline text-[18px]">account_balance</span> Society Builder
+            </button>
+            <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                    :class="superTab === 'campuses' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'campuses'">
+              <span class="material-symbols-outlined icon-outline text-[18px]">domain</span> Campuses Config
+            </button>
+          </div>
+
+          <!-- Section: Users List -->
+          <div x-show="superTab === 'users'" class="academic-card rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold text-primary mb-4">Users Catalog</h3>
+            <div class="overflow-x-auto rounded-lg border border-outline-variant">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr>
+                    <th>Full Name</th>
+                    <th>Email Address</th>
+                    <th>Campus</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="usr in usersList" :key="usr.id">
+                    <tr>
+                      <td class="font-semibold text-primary" x-text="usr.full_name"></td>
+                      <td x-text="usr.email"></td>
+                      <td x-text="usr.campus ? usr.campus.name : 'All Campuses'"></td>
+                      <td>
+                        <select class="rounded border-outline-variant text-sm focus:border-primary focus:ring-primary shadow-sm" :value="usr.role" @change="changeUserRole(usr.id, $event.target.value)">
+                          <option value="student">Student</option>
+                          <option value="society_admin">Society Admin</option>
+                          <option value="super_admin">Super Admin</option>
+                        </select>
+                      </td>
+                      <td>
+                        <span class="px-2 py-1 text-xs font-bold rounded" :class="usr.is_active ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-error-container text-error'" x-text="usr.is_active ? 'Active' : 'Deactivated'"></span>
+                      </td>
+                      <td>
+                        <button class="flex items-center gap-1 text-xs font-semibold text-academic-red hover:text-error hover:bg-error-container px-2 py-1 rounded transition disabled:opacity-50 disabled:cursor-not-allowed" 
+                                :disabled="usr.role === 'super_admin' || !usr.is_active" @click="deactivateUser(usr.id)">
+                          <span class="material-symbols-outlined icon-outline text-[16px]">person_off</span> Deactivate
+                        </button>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section: Society Builder -->
+          <div x-show="superTab === 'societies'" class="flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-5/12">
+              <div class="academic-card rounded-xl p-6">
+                <h3 class="text-lg font-bold text-primary mb-4">Build a New Society</h3>
+                <form @submit.prevent="createSociety" class="flex flex-col gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Society Name</label>
+                    <input type="text" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Technology Society" x-model="societyForm.name" required>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Short Code</label>
+                    <input type="text" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. TS" x-model="societyForm.short_code" required>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Description</label>
+                    <textarea class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" rows="3" placeholder="Define the society's goals..." x-model="societyForm.description"></textarea>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Campus Block Location</label>
+                    <select class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="societyForm.campus_id" required>
+                      <option value="" disabled selected>Select Primary Campus</option>
+                      <template x-for="campus in campuses" :key="campus.id">
+                        <option :value="campus.id" x-text="campus.name || ('Block ' + campus.block_number)"></option>
+                      </template>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Assign President/Founder (User Email)</label>
+                    <input type="email" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="Founder email (must be registered user)" x-model="societyForm.founder_email" required>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Brand Color (Hex Code)</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" class="h-10 w-20 rounded border-outline-variant p-1 cursor-pointer" x-model="societyForm.color_hex">
+                      <span class="text-sm font-mono text-outline" x-text="societyForm.color_hex"></span>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn-brand w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
+                    <span class="material-symbols-outlined icon-outline text-[18px]">add_circle</span> Register Society
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div class="lg:w-7/12">
+              <div class="academic-card rounded-xl p-6 h-full">
+                <h3 class="text-lg font-bold text-primary mb-4">Societies Catalog</h3>
+                <div class="overflow-x-auto rounded-lg border border-outline-variant">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th>Society Name</th>
+                        <th>Short Code</th>
+                        <th>Campus Location</th>
+                        <th>Creator Email</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template x-for="soc in adminDashboard.active_societies" :key="soc.id">
+                        <tr>
+                          <td class="font-semibold text-primary" x-text="soc.name"></td>
+                          <td x-text="soc.short_code"></td>
+                          <td x-text="soc.campus ? soc.campus.name : 'Unknown'"></td>
+                          <td x-text="soc.creator ? soc.creator.email : 'System'"></td>
+                          <td>
+                            <button class="flex items-center gap-1 text-xs font-semibold text-academic-red hover:text-error hover:bg-error-container px-2 py-1 rounded transition" @click="deactivateSociety(soc.id)">
+                              <span class="material-symbols-outlined icon-outline text-[16px]">delete</span> Deactivate
+                            </button>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Campus Block Config -->
+          <div x-show="superTab === 'campuses'" class="flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-5/12">
+              <div class="academic-card rounded-xl p-6">
+                <h3 class="text-lg font-bold text-primary mb-4">Add Campus Block</h3>
+                <form @submit.prevent="createCampus" class="flex flex-col gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Block Number</label>
+                    <input type="text" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. 100" x-model="campusForm.block_number" required>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Campus Name</label>
+                    <input type="text" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Block 100, Clifton" x-model="campusForm.name" required>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Address Details</label>
+                    <textarea class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" rows="3" placeholder="Specify full block street address..." x-model="campusForm.address"></textarea>
+                  </div>
+                  <button type="submit" class="btn-brand-secondary w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
+                    <span class="material-symbols-outlined icon-outline text-[18px]">domain_add</span> Add Campus Block
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div class="lg:w-7/12">
+              <div class="academic-card rounded-xl p-6 h-full">
+                <h3 class="text-lg font-bold text-primary mb-4">Campus Blocks Registered</h3>
+                <div class="overflow-x-auto rounded-lg border border-outline-variant">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th>Block Number</th>
+                        <th>Name</th>
+                        <th>Address</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template x-for="camp in campuses" :key="camp.id">
+                        <tr>
+                          <td class="font-semibold text-primary" x-text="'Block ' + camp.block_number"></td>
+                          <td class="font-medium text-on-surface" x-text="camp.name"></td>
+                          <td class="text-on-surface-variant text-xs" x-text="camp.address"></td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ================= SOCIETY ADMIN CONTROLS ================= -->
+      <template x-if="user.role === 'society_admin'">
+        <div class="w-full" x-data="{ activeSoc: (user.societies && user.societies.length > 0) ? user.societies[0].id : '' }">
+          
+          <div class="mb-6 max-w-sm">
+            <label class="block text-sm font-bold text-primary mb-2">Select Society Account to Manage</label>
+            <select class="w-full rounded-lg border-outline-variant focus:border-primary focus:ring-primary shadow-sm font-semibold" x-model="activeSoc" @change="fetchSocietyData(activeSoc)">
+              <template x-for="soc in user.societies" :key="soc.id">
+                <option :value="soc.id" x-text="soc.name + ' (' + soc.role.toUpperCase() + ')'"></option>
+              </template>
+            </select>
+          </div>
+
+          <!-- Metrics Panel -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="academic-card p-6 flex flex-col items-center justify-center text-center rounded-xl">
+              <span class="material-symbols-outlined text-[32px] text-[#0284c7] mb-2">article</span>
+              <span class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Total Posts Published</span>
+              <h2 class="text-3xl font-bold text-primary" x-text="socAnalytics.total_posts || 0"></h2>
+            </div>
+            <div class="academic-card p-6 flex flex-col items-center justify-center text-center rounded-xl">
+              <span class="material-symbols-outlined text-[32px] text-[#16a34a] mb-2">visibility</span>
+              <span class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Accumulated Post Views</span>
+              <h2 class="text-3xl font-bold text-primary" x-text="socAnalytics.total_views || 0"></h2>
+            </div>
+            <div class="academic-card p-6 flex flex-col items-center justify-center text-center rounded-xl">
+              <span class="material-symbols-outlined text-[32px] text-[#fed65b] mb-2">event_available</span>
+              <span class="text-on-surface-variant text-sm font-semibold uppercase tracking-wider mb-1">Event RSVPs Received</span>
+              <h2 class="text-3xl font-bold text-primary" x-text="socAnalytics.total_rsvps || 0"></h2>
+            </div>
+          </div>
+
+          <!-- Tabs for Society Admin -->
+          <div class="academic-card p-2 rounded-xl mb-6 flex gap-2 overflow-x-auto">
+            <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                    :class="socTab === 'create' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="socTab = 'create'">
+              <span class="material-symbols-outlined icon-outline text-[18px]">edit_square</span> Create Post
+            </button>
+            <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                    :class="socTab === 'posts' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="socTab = 'posts'; fetchSocietyData(activeSoc)">
+              <span class="material-symbols-outlined icon-outline text-[18px]">favorite</span> View Posts / Stats
+            </button>
+            <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                    :class="socTab === 'members' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="socTab = 'members'; fetchMembers(activeSoc)">
+              <span class="material-symbols-outlined icon-outline text-[18px]">group</span> Members Management
+            </button>
+            <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                    :class="socTab === 'profile' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="socTab = 'profile'; loadSocietyProfile(activeSoc)">
+              <span class="material-symbols-outlined icon-outline text-[18px]">settings</span> Society Profile
+            </button>
+          </div>
+
+          <!-- Section: Create Post Form -->
+          <div x-show="socTab === 'create'" class="academic-card rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold text-primary mb-4">Create Post on Behalf of Society</h3>
+            <form @submit.prevent="createPost(activeSoc)" enctype="multipart/form-data" id="postCreateForm" class="flex flex-col gap-4">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Title</label>
+                  <input type="text" name="title" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Hackathon Clifton 2026" required>
+                </div>
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Content Category</label>
+                  <select name="type" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="postType" required>
+                    <option value="" disabled selected>Select category</option>
+                    <option value="event">Event</option>
+                    <option value="scholarship">Scholarship</option>
+                    <option value="internship">Internship</option>
+                    <option value="job">Job</option>
+                    <option value="announcement">Announcement</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Description Content</label>
+                <textarea name="body" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" rows="5" placeholder="Describe the details, rules, registration link, etc..." required></textarea>
+              </div>
+
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Campus Scope</label>
+                  <select name="campus_scope" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="postCampusScope" required>
+                    <option value="all">All campuses</option>
+                    <option value="specific">Specific campus</option>
+                  </select>
+                </div>
+                <div class="flex-1" x-show="postCampusScope === 'specific'">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Target Campus Block</label>
+                  <select name="campus_id" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                    <option value="" disabled selected>Select Target Block</option>
+                    <template x-for="campus in campuses" :key="campus.id">
+                      <option :value="campus.id" x-text="campus.name || ('Block ' + campus.block_number)"></option>
+                    </template>
+                  </select>
+                </div>
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Banner Graphic</label>
+                  <input type="file" name="image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-surface-container file:text-primary hover:file:bg-surface-container-high" accept="image/*">
+                </div>
+              </div>
+
+              <!-- Conditional Event Details -->
+              <div class="border border-outline-variant rounded-lg p-4 bg-surface-container-lowest mt-2" x-show="postType === 'event'">
+                <h5 class="font-bold text-primary mb-3 flex items-center gap-1"><span class="material-symbols-outlined icon-outline text-[18px]">event</span> Event Metadata</h5>
+                <div class="flex flex-col md:flex-row gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Event Date & Time</label>
+                    <input type="datetime-local" name="event_date" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Venue Location</label>
+                    <input type="text" name="venue" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Block 100 Seminar Hall">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Conditional Opportunity Deadline Details -->
+              <div class="border border-outline-variant rounded-lg p-4 bg-surface-container-lowest mt-2" x-show="['scholarship', 'internship', 'job'].includes(postType)">
+                <h5 class="font-bold text-academic-red mb-3 flex items-center gap-1"><span class="material-symbols-outlined icon-outline text-[18px]">alarm</span> Application Deadline</h5>
+                <div class="w-full md:w-1/2 pr-2">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Deadline Date & Time</label>
+                  <input type="datetime-local" name="deadline_date" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                </div>
+              </div>
+
+              <button type="submit" class="btn-brand w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-4 gap-1">
+                <span class="material-symbols-outlined icon-outline text-[18px]">send</span> Publish Post
+              </button>
+            </form>
+          </div>
+
+          <!-- Section: Society Posts List -->
+          <div x-show="socTab === 'posts'" class="academic-card rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold text-primary mb-4">Society Posts Engagement</h3>
+            <div class="overflow-x-auto rounded-lg border border-outline-variant">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr>
+                    <th>Post Title</th>
+                    <th>Category</th>
+                    <th>Created On</th>
+                    <th>Views</th>
+                    <th>RSVPs</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="p in socAnalytics.posts" :key="p.id">
+                    <tr>
+                      <td class="font-semibold text-primary" x-text="p.title"></td>
+                      <td>
+                        <span class="badge-category" :class="'badge-' + p.type" x-text="p.type"></span>
+                      </td>
+                      <td x-text="formatDate(p.created_at)"></td>
+                      <td class="font-medium" x-text="p.view_count"></td>
+                      <td class="font-medium" x-text="p.rsvp_count"></td>
+                      <td>
+                        <button class="flex items-center gap-1 text-xs font-semibold text-on-surface-variant hover:text-error hover:bg-error-container px-2 py-1 rounded transition border border-outline-variant" @click="archivePost(p.id, activeSoc)">
+                          <span class="material-symbols-outlined icon-outline text-[16px]">archive</span> Archive
+                        </button>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section: Members Panel -->
+          <div x-show="socTab === 'members'" class="flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-5/12">
+              <div class="academic-card rounded-xl p-6">
+                <h3 class="text-lg font-bold text-primary mb-4">Add Society Member</h3>
+                <form @submit.prevent="addMember(activeSoc)" class="flex flex-col gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Student Registered Email</label>
+                    <input type="email" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. student@szabist.edu.pk" x-model="memberForm.email" required>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Assign Role</label>
+                    <select class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="memberForm.role" required>
+                      <option value="member">General Member</option>
+                      <option value="marketing">Marketing Head</option>
+                      <option value="president">President</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn-brand-secondary w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
+                    <span class="material-symbols-outlined icon-outline text-[18px]">person_add</span> Add Member
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div class="lg:w-7/12">
+              <div class="academic-card rounded-xl p-6 h-full">
+                <h3 class="text-lg font-bold text-primary mb-4">Society Members Roster</h3>
+                <div class="overflow-x-auto rounded-lg border border-outline-variant">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Joined At</th>
+                        <th>Society Role</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template x-for="mb in membersList" :key="mb.user_id">
+                        <tr>
+                          <td class="font-semibold text-primary" x-text="mb.user.full_name"></td>
+                          <td x-text="mb.user.email"></td>
+                          <td x-text="formatDate(mb.joined_at)"></td>
+                          <td>
+                            <span class="px-2 py-1 text-[10px] font-bold rounded bg-surface-container uppercase tracking-wide text-on-surface-variant" x-text="mb.role"></span>
+                          </td>
+                          <td>
+                            <!-- Can't delete yourself -->
+                            <button class="flex items-center gap-1 text-xs font-semibold text-academic-red hover:text-error hover:bg-error-container px-2 py-1 rounded transition disabled:opacity-50 disabled:cursor-not-allowed" :disabled="mb.user.id === user.id" @click="removeMember(activeSoc, mb.user_id)">
+                              <span class="material-symbols-outlined icon-outline text-[16px]">person_remove</span> Remove
+                            </button>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Society Profile Editor -->
+          <div x-show="socTab === 'profile'" class="academic-card rounded-xl p-6 mb-6 max-w-2xl">
+            <h3 class="text-lg font-bold text-primary mb-4">Edit Society Profile</h3>
+            <form @submit.prevent="updateSocietyProfile(activeSoc)" class="flex flex-col gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Society Name</label>
+                <input type="text" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="profileForm.name" required>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Description</label>
+                <textarea class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" rows="4" x-model="profileForm.description"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Branding Color Accent</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" class="h-10 w-20 rounded border-outline-variant p-1 cursor-pointer" x-model="profileForm.color_hex">
+                  <span class="text-sm font-mono text-outline" x-text="profileForm.color_hex"></span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Logo Graphic Link</label>
+                <input type="text" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="Provide logo URL or icon path" x-model="profileForm.logo_url">
+              </div>
+              <button type="submit" class="btn-brand w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2">
+                Save Profile Changes
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <script>
+    function dashboardApp() {
+      return {
+        user: { role: 'student', full_name: '', societies: [] },
+        campuses: [],
+        usersList: [],
+        membersList: [],
+        analytics: {},
+        adminDashboard: {},
+        socAnalytics: {},
+        
+        // Tabs
+        superTab: 'users',
+        socTab: 'create',
+        
+        // Forms states
+        postType: '',
+        postCampusScope: 'all',
+        memberForm: { email: '', role: 'member' },
+        societyForm: { name: '', short_code: '', description: '', campus_id: '', founder_email: '', color_hex: '#0ea5e9' },
+        campusForm: { block_number: '', name: '', address: '' },
+        profileForm: { name: '', description: '', color_hex: '', logo_url: '' },
+
+        async initApp() {
+          try {
+            const res = await fetch('/api/v1/auth/me');
+            if (res.status === 401) {
+              window.location.href = '/login.html';
+              return;
+            }
+            const data = await res.json();
+            this.user = data.user;
+            
+            if (this.user.role === 'student') {
+              window.location.href = '/index.html'; // Student cannot view dashboard
+              return;
+            }
+
+            // Load campuses block list
+            const cres = await fetch('/api/v1/campuses');
+            if (cres.ok) this.campuses = await cres.json();
+
+            // Load role-specific initial data
+            if (this.user.role === 'super_admin') {
+              await this.fetchUsers();
+              await this.fetchAdminAnalytics();
+              await this.fetchAdminDashboard();
+            } else if (this.user.role === 'society_admin' && this.user.societies.length > 0) {
+              await this.fetchSocietyData(this.user.societies[0].id);
+            }
+          } catch (err) {
+            console.error(err);
+            window.location.href = '/login.html';
+          }
+        },
+
+        // ================= SUPER ADMIN ACTIONS =================
+        async fetchUsers() {
+          const res = await fetch('/api/v1/users');
+          if (res.ok) this.usersList = await res.json();
+        },
+
+        async fetchAdminAnalytics() {
+          const res = await fetch('/api/v1/admin/analytics');
+          if (res.ok) this.analytics = await res.json();
+        },
+
+        async fetchAdminDashboard() {
+          const res = await fetch('/api/v1/admin/dashboard');
+          if (res.ok) this.adminDashboard = await res.json();
+        },
+
+        async deactivateUser(id) {
+          if (!confirm('Are you sure you want to deactivate this student account?')) return;
+          const res = await fetch(`/api/v1/users/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            alert('User account deactivated.');
+            this.fetchUsers();
+            this.fetchAdminAnalytics();
+          }
+        },
+
+        async changeUserRole(id, role) {
+          const res = await fetch(`/api/v1/users/${id}/role`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role })
+          });
+          if (res.ok) {
+            alert(`User role updated to ${role}.`);
+            this.fetchUsers();
+          }
+        },
+
+        async createCampus() {
+          const res = await fetch('/api/v1/campuses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.campusForm)
+          });
+          if (res.ok) {
+            alert('Campus block added.');
+            this.campusForm = { block_number: '', name: '', address: '' };
+            const cres = await fetch('/api/v1/campuses');
+            if (cres.ok) this.campuses = await cres.json();
+          } else {
+            const data = await res.json();
+            alert(data.error || 'Failed to add campus block.');
+          }
+        },
+
+        async createSociety() {
+          const resUser = await fetch('/api/v1/users');
+          if (resUser.ok) {
+            const users = await resUser.json();
+            const founder = users.find(u => u.email === this.societyForm.founder_email);
+            if (!founder) {
+              alert('Assignee email not registered. Please register the user account first.');
+              return;
+            }
+            
+            const payload = {
+              name: this.societyForm.name,
+              short_code: this.societyForm.short_code,
+              description: this.societyForm.description,
+              campus_id: this.societyForm.campus_id,
+              created_by: founder.id,
+              color_hex: this.societyForm.color_hex,
+              logo_url: '/uploads/society-placeholder.png' // Default logo
+            };
+
+            const res = await fetch('/api/v1/societies', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+              alert('New society registered successfully!');
+              this.societyForm = { name: '', short_code: '', description: '', campus_id: '', founder_email: '', color_hex: '#0ea5e9' };
+              this.fetchAdminDashboard();
+              this.fetchAdminAnalytics();
+            } else {
+              const data = await res.json();
+              alert(data.error || 'Failed to register society.');
+            }
+          }
+        },
+
+        async deactivateSociety(id) {
+          if (!confirm('Deactivate this society profile? This removes access to their admins.')) return;
+          const res = await fetch(`/api/v1/societies/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            alert('Society deactivated.');
+            this.fetchAdminDashboard();
+            this.fetchAdminAnalytics();
+          }
+        },
+
+        // ================= SOCIETY ADMIN ACTIONS =================
+        async fetchSocietyData(societyId) {
+          if (!societyId) return;
+          const resAna = await fetch(`/api/v1/societies/${societyId}/analytics`);
+          if (resAna.ok) this.socAnalytics = await resAna.json();
+          
+          await this.loadSocietyProfile(societyId);
+        },
+
+        async loadSocietyProfile(societyId) {
+          const res = await fetch(`/api/v1/societies/${societyId}`);
+          if (res.ok) {
+            const data = await res.json();
+            this.profileForm = {
+              name: data.name,
+              description: data.description || '',
+              color_hex: data.color_hex || '#0ea5e9',
+              logo_url: data.logo_url || ''
+            };
+          }
+        },
+
+        async updateSocietyProfile(societyId) {
+          const res = await fetch(`/api/v1/societies/${societyId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.profileForm)
+          });
+          if (res.ok) {
+            alert('Society profile settings saved successfully.');
+            this.fetchSocietyData(societyId);
+          }
+        },
+
+        async fetchMembers(societyId) {
+          const res = await fetch(`/api/v1/societies/${societyId}/members`);
+          if (res.ok) this.membersList = await res.json();
+        },
+
+        async addMember(societyId) {
+          const res = await fetch(`/api/v1/societies/${societyId}/members`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.memberForm)
+          });
+          if (res.ok) {
+            alert('Member added successfully.');
+            this.memberForm = { email: '', role: 'member' };
+            this.fetchMembers(societyId);
+          } else {
+            const data = await res.json();
+            alert(data.error || 'Failed to add member.');
+          }
+        },
+
+        async removeMember(societyId, userId) {
+          if (!confirm('Remove member from society?')) return;
+          const res = await fetch(`/api/v1/societies/${societyId}/members/${userId}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) {
+            alert('Member removed.');
+            this.fetchMembers(societyId);
+          }
+        },
+
+        async createPost(societyId) {
+          const form = document.getElementById('postCreateForm');
+          const formData = new FormData(form);
+          
+          formData.append('society_id', societyId);
+
+          try {
+            const res = await fetch('/api/v1/posts', {
+              method: 'POST',
+              body: formData
+            });
+
+            if (res.ok) {
+              alert('Post published successfully to feed!');
+              form.reset();
+              this.postType = '';
+              this.postCampusScope = 'all';
+              this.fetchSocietyData(societyId);
+              this.socTab = 'posts';
+            } else {
+              const data = await res.json();
+              alert(data.error || 'Failed to publish post.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Connection error uploading post.');
+          }
+        },
+
+        async archivePost(postId, societyId) {
+          if (!confirm('Are you sure you want to delete/archive this post?')) return;
+          const res = await fetch(`/api/v1/posts/${postId}`, { method: 'DELETE' });
+          if (res.ok) {
+            alert('Post archived.');
+            this.fetchSocietyData(societyId);
+          }
+        },
+
+        // Helper date formatter
+        formatDate(dateStr) {
+          if (!dateStr) return 'N/A';
+          return new Date(dateStr).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          });
+        }
+      };
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Email | ZabNex</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline": "#71787b",
+                        "secondary": "#735c00",
+                        "primary-fixed": "#baeaf8",
+                        "surface-dim": "#dadada",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-primary-fixed-variant": "#1b4d58",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#003b46",
+                        "surface-tint": "#366571",
+                        "outline-variant": "#c0c8ca",
+                        "on-secondary-fixed-variant": "#574500",
+                        "tertiary-container": "#1a355c",
+                        "inverse-surface": "#2f3131",
+                        "secondary-container": "#fed65b",
+                        "on-surface": "#1a1c1c",
+                        "tertiary": "#001f44",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-primary": "#ffffff",
+                        "ink": "#222222",
+                        "on-tertiary-fixed": "#001b3d",
+                        "surface-bright": "#f9f9f9",
+                        "background": "#f9f9f9",
+                        "on-secondary-container": "#745c00",
+                        "on-tertiary-fixed-variant": "#2d476f",
+                        "surface": "#f9f9f9",
+                        "on-tertiary-container": "#859ecb",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "academic-red": "#EE3124",
+                        "tertiary-fixed": "#d6e3ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed": "#241a00",
+                        "on-error": "#ffffff",
+                        "success-green": "#2E8227",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-low": "#f3f3f3",
+                        "secondary-fixed": "#ffe088",
+                        "surface-alt": "#E9ECEF",
+                        "on-surface-variant": "#40484a",
+                        "on-primary-container": "#77a5b2",
+                        "primary": "#003b46",
+                        "primary-fixed-dim": "#9fcedc",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#aec7f6",
+                        "on-primary-fixed": "#001f26",
+                        "inverse-primary": "#9fcedc",
+                        "surface-container": "#eeeeee"
+                    },
+                    "fontFamily": {
+                        "display": ["Inter"],
+                        "body": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+  <style>
+      body {
+          background-color: #f9f9f9;
+          font-family: 'Inter', sans-serif;
+      }
+      .academic-card {
+          background: #ffffff;
+          border: 1px solid #e2e2e2;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      .btn-brand {
+          background-color: #003b46;
+          color: white;
+          transition: all 0.2s ease;
+      }
+      .btn-brand:hover {
+          background-color: #002c35;
+      }
+      .btn-brand-secondary {
+          background-color: #fed65b;
+          color: #241a00;
+          transition: all 0.2s ease;
+      }
+      .btn-brand-secondary:hover {
+          background-color: #e9c349;
+      }
+      .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+  </style>
+</head>
+<body class="bg-background text-on-surface flex items-center justify-center min-h-screen p-6">
+
+  <div class="w-full max-w-[480px]" x-data="verifyForm()">
+    <div class="academic-card rounded-xl p-8 md:p-12 flex flex-col">
+      
+      <div class="flex flex-col items-center mb-8 text-center">
+        <div class="w-20 h-20 mb-4 text-secondary-container">
+          <span class="material-symbols-outlined text-[80px]" style="font-size: 80px;">mark_email_unread</span>
+        </div>
+        <h1 class="text-3xl font-bold text-primary mb-1">Verify Account</h1>
+        <p class="text-on-surface-variant text-sm">Enter the verification code sent to your email</p>
+      </div>
+
+      <!-- Dev mode alert badge -->
+      <div class="bg-surface-container border border-outline-variant p-3 rounded-lg text-sm text-on-surface-variant mb-6 text-center">
+        <strong>Dev Mode Note:</strong> Look at your Node.js server console output to find the 6-digit verification code for this account.
+      </div>
+
+      <div class="bg-error-container text-on-error-container p-3 rounded-lg text-sm mb-4" x-show="errorMessage" x-text="errorMessage" x-transition style="display: none;"></div>
+      <div class="bg-surface-container-highest text-success-green p-3 rounded-lg text-sm mb-4" x-show="successMessage" x-text="successMessage" x-transition style="display: none;"></div>
+
+      <form @submit.prevent="submitVerification" class="flex flex-col gap-5">
+        <!-- Email Input (Prefilled) -->
+        <div>
+          <label for="email" class="block text-sm font-semibold text-on-surface-variant mb-1">Registered Email</label>
+          <input type="email" id="email" class="w-full rounded-md border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:ring-primary shadow-sm" x-model="email" required>
+        </div>
+
+        <!-- 6-digit Code Input -->
+        <div>
+          <label for="code" class="block text-sm font-semibold text-on-surface-variant mb-1">Verification Code</label>
+          <input type="text" id="code" class="w-full rounded-md border-outline-variant text-on-surface text-center text-2xl tracking-[0.5em] focus:border-primary focus:ring-primary shadow-sm py-3" placeholder="123456" maxlength="6" x-model="code" required>
+        </div>
+
+        <button type="submit" class="btn-brand-secondary w-full py-3 rounded-lg font-bold flex justify-center items-center mt-2" :disabled="loading">
+          <span x-show="!loading">Verify Account</span>
+          <span x-show="loading" class="material-symbols-outlined animate-spin" style="display: none;">progress_activity</span>
+        </button>
+      </form>
+
+      <div class="text-center mt-6 text-sm">
+        <span class="text-on-surface-variant">Wrong email?</span>
+        <a href="/register.html" class="text-primary font-semibold ml-1 hover:underline">Register again</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function verifyForm() {
+      return {
+        email: '',
+        code: '',
+        loading: false,
+        errorMessage: '',
+        successMessage: '',
+
+        init() {
+          // Prefill email from query parameter
+          const urlParams = new URLSearchParams(window.location.search);
+          this.email = urlParams.get('email') || '';
+        },
+
+        async submitVerification() {
+          this.errorMessage = '';
+          this.successMessage = '';
+
+          if (!this.email) {
+            this.errorMessage = 'Email address is required.';
+            return;
+          }
+
+          if (this.code.length !== 6) {
+            this.errorMessage = 'Please enter a valid 6-digit code.';
+            return;
+          }
+
+          this.loading = true;
+
+          try {
+            const res = await fetch('/api/v1/auth/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: this.email, code: this.code })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+              this.successMessage = data.message;
+              setTimeout(() => {
+                window.location.href = '/login.html';
+              }, 2000);
+            } else {
+              this.errorMessage = data.error || 'Verification failed.';
+            }
+          } catch (err) {
+            console.error(err);
+            this.errorMessage = 'Failed to connect to the server.';
+          } finally {
+            this.loading = false;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

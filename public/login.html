@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | ZabNex</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "outline": "#71787b",
+                        "secondary": "#735c00",
+                        "primary-fixed": "#baeaf8",
+                        "surface-dim": "#dadada",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-primary-fixed-variant": "#1b4d58",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#003b46",
+                        "surface-tint": "#366571",
+                        "outline-variant": "#c0c8ca",
+                        "on-secondary-fixed-variant": "#574500",
+                        "tertiary-container": "#1a355c",
+                        "inverse-surface": "#2f3131",
+                        "secondary-container": "#fed65b",
+                        "on-surface": "#1a1c1c",
+                        "tertiary": "#001f44",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-primary": "#ffffff",
+                        "ink": "#222222",
+                        "on-tertiary-fixed": "#001b3d",
+                        "surface-bright": "#f9f9f9",
+                        "background": "#f9f9f9",
+                        "on-secondary-container": "#745c00",
+                        "on-tertiary-fixed-variant": "#2d476f",
+                        "surface": "#f9f9f9",
+                        "on-tertiary-container": "#859ecb",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "academic-red": "#EE3124",
+                        "tertiary-fixed": "#d6e3ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed": "#241a00",
+                        "on-error": "#ffffff",
+                        "success-green": "#2E8227",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-low": "#f3f3f3",
+                        "secondary-fixed": "#ffe088",
+                        "surface-alt": "#E9ECEF",
+                        "on-surface-variant": "#40484a",
+                        "on-primary-container": "#77a5b2",
+                        "primary": "#003b46",
+                        "primary-fixed-dim": "#9fcedc",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#aec7f6",
+                        "on-primary-fixed": "#001f26",
+                        "inverse-primary": "#9fcedc",
+                        "surface-container": "#eeeeee"
+                    },
+                    "fontFamily": {
+                        "display": ["Inter"],
+                        "body": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+  <style>
+      body {
+          background-color: #f9f9f9;
+          font-family: 'Inter', sans-serif;
+      }
+      .academic-card {
+          background: #ffffff;
+          border: 1px solid #e2e2e2;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      .btn-brand {
+          background-color: #003b46;
+          color: white;
+          transition: all 0.2s ease;
+      }
+      .btn-brand:hover {
+          background-color: #002c35;
+      }
+      .btn-brand-secondary {
+          background-color: #fed65b;
+          color: #241a00;
+          transition: all 0.2s ease;
+      }
+      .btn-brand-secondary:hover {
+          background-color: #e9c349;
+      }
+      .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+  </style>
+</head>
+<body class="bg-background text-on-surface flex items-center justify-center min-h-screen p-6">
+  <div class="w-full max-w-[480px]" x-data="loginForm()">
+    <div class="academic-card rounded-xl p-8 md:p-12 flex flex-col">
+      
+      <div class="flex flex-col items-center mb-8 text-center">
+        <div class="w-20 h-20 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-full h-full">
+            <path d="M25 30 H75 L25 70 H75" stroke="#003b46" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            <path d="M35 70 V30 L65 70 V30" stroke="#003b46" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.4" />
+            <circle cx="50" cy="50" r="5" fill="#003b46" />
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-primary mb-1">ZabNex</h1>
+        <p class="text-on-surface-variant text-sm">Log in to your campus account</p>
+      </div>
+
+      <div class="bg-error-container text-on-error-container p-3 rounded-lg text-sm mb-4" x-show="errorMessage" x-text="errorMessage" x-transition style="display: none;"></div>
+      <div class="bg-surface-container-highest text-success-green p-3 rounded-lg text-sm mb-4" x-show="successMessage" x-text="successMessage" x-transition style="display: none;"></div>
+
+      <form @submit.prevent="submitForm" class="flex flex-col gap-4">
+        <!-- Email -->
+        <div>
+          <label for="email" class="block text-sm font-semibold text-on-surface-variant mb-1">SZABIST Email Address</label>
+          <input type="email" id="email" class="w-full rounded-md border-outline-variant text-on-surface focus:border-primary focus:ring-primary shadow-sm" placeholder="e.g. name@szabist.edu.pk" x-model="formData.email" required>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="password" class="block text-sm font-semibold text-on-surface-variant mb-1">Password</label>
+          <input type="password" id="password" class="w-full rounded-md border-outline-variant text-on-surface focus:border-primary focus:ring-primary shadow-sm" placeholder="Enter your password" x-model="formData.password" required>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn-brand w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2" :disabled="loading">
+          <span x-show="!loading">Log In</span>
+          <span x-show="loading" class="material-symbols-outlined animate-spin" style="display: none;">progress_activity</span>
+        </button>
+      </form>
+
+      <div class="text-center mt-6 text-sm">
+        <span class="text-on-surface-variant">Don't have an account?</span>
+        <a href="/register.html" class="text-primary font-semibold ml-1 hover:underline">Register here</a>
+      </div>
+
+      <!-- Quick credentials help badge -->
+      <div class="mt-8 pt-4 border-t border-outline-variant text-center text-on-surface-variant text-xs">
+        <strong>Demo Admin Account:</strong><br>
+        Email: <code class="bg-surface-container px-1 py-0.5 rounded">admin@szabist.edu.pk</code> | Password: <code class="bg-surface-container px-1 py-0.5 rounded">admin123</code>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function loginForm() {
+      return {
+        formData: {
+          email: '',
+          password: ''
+        },
+        loading: false,
+        errorMessage: '',
+        successMessage: '',
+
+        async submitForm() {
+          this.errorMessage = '';
+          this.successMessage = '';
+          this.loading = true;
+
+          try {
+            const res = await fetch('/api/v1/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.formData)
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+              this.successMessage = 'Login successful!';
+              setTimeout(() => {
+                window.location.href = `/index.html?user_id=${data.user.id}`;
+              }, 1000);
+            } else {
+              if (data.requiresVerification) {
+                this.errorMessage = 'Verification pending. Redirecting you to the verification screen...';
+                setTimeout(() => {
+                  window.location.href = `/verify.html?email=${encodeURIComponent(data.email)}`;
+                }, 1500);
+              } else {
+                this.errorMessage = data.error || 'Login failed. Please check credentials.';
+              }
+            }
+          } catch (err) {
+            console.error(err);
+            this.errorMessage = 'Failed to connect to the server.';
+          } finally {
+            this.loading = false;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
