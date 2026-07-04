@@ -66,10 +66,10 @@ FOR EACH ROW EXECUTE FUNCTION log_post_history();
 
 -- 2. STORED FUNCTIONS / PROCEDURES
 -- Toggle RSVP function: insert if not exists, else delete
-CREATE OR REPLACE FUNCTION toggle_rsvp(p_post_id UUID, p_user_id UUID)
+CREATE OR REPLACE FUNCTION toggle_rsvp(p_post_id INTEGER, p_user_id INTEGER)
 RETURNS TEXT AS $$
 DECLARE
-  existing_id UUID;
+  existing_id INTEGER;
 BEGIN
   SELECT id INTO existing_id FROM rsvps
   WHERE post_id = p_post_id AND user_id = p_user_id;
@@ -86,7 +86,7 @@ $$ LANGUAGE plpgsql;
 
 -- Get upcoming deadlines function
 CREATE OR REPLACE FUNCTION get_upcoming_deadlines(days_ahead INT DEFAULT 30)
-RETURNS TABLE (id UUID, title VARCHAR, type TEXT, deadline_date TIMESTAMPTZ) AS $$
+RETURNS TABLE (id INTEGER, title VARCHAR, type TEXT, deadline_date TIMESTAMPTZ) AS $$
 BEGIN
   RETURN QUERY
   SELECT p.id, p.title, p.type::TEXT, p.deadline_date

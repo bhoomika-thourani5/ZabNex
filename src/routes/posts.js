@@ -22,7 +22,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     if (campus_id) {
       params.push(campus_id);
-      query += ` AND (campus_scope = 'all' OR campus_id = $${params.length}::uuid)`;
+      query += ` AND (campus_scope = 'all' OR campus_id = $${params.length}::integer)`;
     }
 
     if (type) {
@@ -32,7 +32,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
     if (society_id) {
       params.push(society_id);
-      query += ` AND society_id = $${params.length}::uuid`;
+      query += ` AND society_id = $${params.length}::integer`;
     }
 
     if (search && search.trim().length > 0) {
@@ -262,7 +262,7 @@ router.post('/:id/rsvp', authMiddleware, requireRole(['student', 'society_admin'
     if (postRes.rows.length === 0) return res.status(404).json({ error: 'Post not found.' });
     if (postRes.rows[0].type !== 'event') return res.status(400).json({ error: 'RSVPs are only allowed on Event posts.' });
 
-    const result = await pool.query('SELECT toggle_rsvp($1::uuid, $2::uuid) AS status', [id, userId]);
+    const result = await pool.query('SELECT toggle_rsvp($1::integer, $2::integer) AS status', [id, userId]);
     const rsvpStatus = result.rows[0].status;
 
     const countRes = await pool.query('SELECT rsvp_count FROM posts WHERE id = $1', [id]);
