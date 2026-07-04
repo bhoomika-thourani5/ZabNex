@@ -1,0 +1,32 @@
+{
+  "name": "ZabNex - Node.js & PostgreSQL",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/postgres:1": {
+      "version": "15"
+    }
+  },
+  "forwardPorts": [3000, 5432],
+  "portsAttributes": {
+    "3000": {
+      "label": "ZabNex Web App",
+      "onAutoForward": "openBrowser"
+    },
+    "5432": {
+      "label": "PostgreSQL Database",
+      "onAutoForward": "ignore"
+    }
+  },
+  "postCreateCommand": "npm install && cp -n .env.example .env || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "bradlc.tailwindcss-intellisense",
+        "christian-kohler.path-intellisense",
+        "formulahendry.auto-rename-tag",
+        "ecmel.vscode-html-css"
+      ]
+    }
+  }
+}
