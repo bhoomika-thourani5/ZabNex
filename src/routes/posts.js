@@ -183,9 +183,10 @@ router.post('/', authMiddleware, requireRole(['society_admin', 'super_admin']), 
 
     if (targetUsersRes.rows.length > 0) {
       const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+      const titleStr = title.replace(/'/g, "''");
       
       const values = targetUsersRes.rows.map(u => 
-        `('${u.id}', 'new_post', 'New ${typeLabel} Published', '"${title.replace(/'/g, "''")}" has been posted. Check details now!', '${post.id}')`
+        `('${u.id}', 'new_post'::"NotificationType", 'New ${typeLabel} Published', '"${titleStr}" has been posted. Check details now!', '${post.id}')`
       ).join(',');
 
       await pool.query(`

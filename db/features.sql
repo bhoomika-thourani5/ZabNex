@@ -38,6 +38,31 @@ CREATE TRIGGER trg_rsvp_count
 AFTER INSERT OR DELETE ON rsvps
 FOR EACH ROW EXECUTE FUNCTION update_rsvp_count();
 
+-- Auto-log posts history trigger function
+CREATE OR REPLACE FUNCTION log_post_history()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    INSERT INTO posts_history (post_id, title, body, type, status, changed_by)
+    VALUES (NEW.id, NEW.title, NEW.body, NEW.type, NEW.status, NEW.author_id);
+  ELSIF TG_OP = 'UPDATE' THEN
+    -- In this app, only the author or admin updates the post. Since we don't always have the user who changed it in the context of the query, we can use the author_id for now or leave it null if not known. 
+    -- Actually, we have the user who changed it in the session, but Postgres triggers don't have access to the Express session. 
+    -- So we'll use author_id as a fallback.
+    INSERT INTO posts_history (post_id, title, body, type, status, changed_by)
+    VALUES (NEW.id, NEW.title, NEW.body, NEW.type, NEW.status, NEW.author_id);
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Bind triggers to posts table
+DROP TRIGGER IF EXISTS trg_posts_history ON posts;
+CREATE TRIGGER trg_posts_history
+AFTER INSERT OR UPDATE ON posts
+FOR EACH ROW EXECUTE FUNCTION log_post_history();
+
+
 
 -- 2. STORED FUNCTIONS / PROCEDURES
 -- Toggle RSVP function: insert if not exists, else delete

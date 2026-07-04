@@ -106,6 +106,27 @@ CREATE TABLE notifications (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
+-- Create login_history table
+CREATE TABLE login_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  login_time TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+-- Create posts_history table
+CREATE TABLE posts_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID NOT NULL,
+  title VARCHAR(300),
+  body TEXT,
+  type "PostType",
+  status "PostStatus",
+  changed_by UUID,
+  changed_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
 -- Create session table for connect-pg-simple
 CREATE TABLE IF NOT EXISTS "session" (
   "sid" varchar NOT NULL COLLATE "default",

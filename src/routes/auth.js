@@ -193,6 +193,16 @@ router.post('/login', validateLogin, async (req, res) => {
       societies: societies,
     };
 
+    // Log the successful login
+    try {
+      await pool.query(
+        'INSERT INTO login_history (user_id, ip_address, user_agent) VALUES ($1, $2, $3)',
+        [user.id, req.ip || req.connection.remoteAddress, req.headers['user-agent'] || 'Unknown']
+      );
+    } catch (logError) {
+      console.error('Failed to insert login history:', logError);
+    }
+
     res.status(200).json({
       message: 'Login successful.',
       user: {
