@@ -92,6 +92,7 @@ BEGIN
   SELECT p.id, p.title, p.type::TEXT, p.deadline_date
   FROM posts p
   WHERE p.deadline_date IS NOT NULL
+    AND p.status = 'published'
     AND p.deadline_date BETWEEN now() AND now() + (days_ahead || ' days')::INTERVAL
   ORDER BY p.deadline_date ASC;
 END;
@@ -118,6 +119,7 @@ SELECT id, title, type, rsvp_count, view_count,
        (rsvp_count * 2 + view_count) AS trend_score
 FROM posts
 WHERE created_at >= now() - INTERVAL '7 days'
+  AND status = 'published'
 ORDER BY trend_score DESC
 LIMIT 20;
 
