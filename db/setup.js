@@ -22,13 +22,13 @@ async function setupDatabase() {
     const res = await client.query('SELECT NOW() as time');
     console.log(`Connected to Neon Database at ${res.rows[0].time}`);
 
-    // Drop all tables/enums to reset (optional, but good for clean setup)
-    console.log('Dropping existing schema (if any)...');
-    await client.query(`
-      DROP SCHEMA public CASCADE;
-      CREATE SCHEMA public;
-      GRANT ALL ON SCHEMA public TO public;
-    `);
+    // Prevent accidental data loss - do not drop schema by default
+    // console.log('Dropping existing schema (if any)...');
+    // await client.query(`
+    //   DROP SCHEMA public CASCADE;
+    //   CREATE SCHEMA public;
+    //   GRANT ALL ON SCHEMA public TO public;
+    // `);
 
     await runSqlFile(client, path.join(__dirname, 'schema.sql'));
     await runSqlFile(client, path.join(__dirname, 'features.sql'));
