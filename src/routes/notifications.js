@@ -15,6 +15,18 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+// PUT /api/v1/notifications/read-all - Mark all notifications as read (MUST be before /:id routes)
+router.put('/read-all', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.session.user.id;
+    const { rowCount } = await pool.query('UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false', [userId]);
+    res.status(200).json({ message: 'All notifications marked as read.', count: rowCount });
+  } catch (error) {
+    console.error('Mark All Read Error:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 // PUT /api/v1/notifications/:id/read - Mark single notification as read
 router.put('/:id/read', authMiddleware, async (req, res) => {
   try {
@@ -27,18 +39,6 @@ router.put('/:id/read', authMiddleware, async (req, res) => {
     res.status(200).json(rows[0]);
   } catch (error) {
     console.error('Mark Read Notification Error:', error);
-    res.status(500).json({ error: 'Internal server error.' });
-  }
-});
-
-// PUT /api/v1/notifications/read-all - Mark all notifications as read
-router.put('/read-all', authMiddleware, async (req, res) => {
-  try {
-    const userId = req.session.user.id;
-    const { rowCount } = await pool.query('UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false', [userId]);
-    res.status(200).json({ message: 'All notifications marked as read.', count: rowCount });
-  } catch (error) {
-    console.error('Mark All Read Error:', error);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
