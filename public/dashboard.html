@@ -209,8 +209,6 @@
             </div>
           </div>
 
-          <!-- Navigation Tabs -->
-          <div class="academic-card p-2 rounded-xl mb-6 flex gap-2 overflow-x-auto">
             <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
                     :class="superTab === 'users' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'users'">
               <span class="material-symbols-outlined icon-outline text-[18px]">manage_accounts</span> User Management
@@ -222,6 +220,10 @@
             <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
                     :class="superTab === 'campuses' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'campuses'">
               <span class="material-symbols-outlined icon-outline text-[18px]">domain</span> Campuses Config
+            </button>
+            <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                    :class="superTab === 'adminpost' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'adminpost'">
+              <span class="material-symbols-outlined icon-outline text-[18px]">post_add</span> Post as Admin
             </button>
           </div>
 
@@ -412,6 +414,78 @@
               </div>
             </div>
           </div>
+          <!-- Section: Admin Post Creation -->
+          <div x-show="superTab === 'adminpost'" class="academic-card rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold text-primary mb-1">Publish Official Announcement</h3>
+            <p class="text-sm text-on-surface-variant mb-4">Post scholarships, jobs, internships, announcements and events directly as SZABIST Admin (no society required).</p>
+            <form @submit.prevent="createAdminPost()" enctype="multipart/form-data" id="adminPostForm" class="flex flex-col gap-4">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Title</label>
+                  <input type="text" id="adminPostTitle" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Need-Based Scholarship 2026" required>
+                </div>
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Content Category</label>
+                  <select id="adminPostType" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="adminPostType" required>
+                    <option value="" disabled selected>Select category</option>
+                    <option value="event">Event</option>
+                    <option value="scholarship">Scholarship</option>
+                    <option value="internship">Internship</option>
+                    <option value="job">Job</option>
+                    <option value="announcement">Announcement</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Description / Content</label>
+                <textarea id="adminPostBody" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" rows="6" placeholder="Describe the full details, eligibility, registration link, etc..." required></textarea>
+              </div>
+
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Campus Scope</label>
+                  <select id="adminPostCampusScope" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="adminPostCampusScope">
+                    <option value="all">All Campus Blocks</option>
+                    <option value="specific">Specific Block Only</option>
+                  </select>
+                </div>
+                <div class="flex-1" x-show="adminPostCampusScope === 'specific'">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Select Campus Block</label>
+                  <select id="adminPostCampusId" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                    <template x-for="campus in campuses" :key="campus.id">
+                      <option :value="campus.id" x-text="campus.name || ('Block ' + campus.block_number)"></option>
+                    </template>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1" x-show="adminPostType === 'event'">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Event Date & Time</label>
+                  <input type="datetime-local" id="adminPostEventDate" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                </div>
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Deadline Date <span class="text-outline font-normal">(optional)</span></label>
+                  <input type="datetime-local" id="adminPostDeadline" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                </div>
+                <div class="flex-1">
+                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Venue <span class="text-outline font-normal">(optional)</span></label>
+                  <input type="text" id="adminPostVenue" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Room 5, Block 153">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Upload Flyer / Image <span class="text-outline font-normal">(optional)</span></label>
+                <input type="file" id="adminPostImage" name="image" accept="image/*" class="w-full rounded-md border border-outline-variant bg-surface-container-low text-sm p-2 cursor-pointer">
+              </div>
+
+              <button type="submit" class="btn-brand w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
+                <span class="material-symbols-outlined icon-outline text-[18px]">publish</span> Publish Official Post
+              </button>
+            </form>
+          </div>
+
         </div>
       </template>
 
@@ -714,6 +788,8 @@
         editingPostId: null,
         postType: '',
         postCampusScope: 'all',
+        adminPostType: '',
+        adminPostCampusScope: 'all',
         memberForm: { email: '', role: 'member' },
         societyForm: { name: '', short_code: '', description: '', campus_id: '', founder_email: '', color_hex: '#0ea5e9' },
         campusForm: { block_number: '', name: '', address: '' },
@@ -766,6 +842,53 @@
         async fetchAdminDashboard() {
           const res = await fetch('/api/v1/admin/dashboard');
           if (res.ok) this.adminDashboard = await res.json();
+        },
+
+        async createAdminPost() {
+          try {
+            const title = document.getElementById('adminPostTitle').value;
+            const body = document.getElementById('adminPostBody').value;
+            const type = this.adminPostType;
+            const campusScope = this.adminPostCampusScope;
+            const campusId = document.getElementById('adminPostCampusId') ? document.getElementById('adminPostCampusId').value : null;
+            const eventDate = document.getElementById('adminPostEventDate') ? document.getElementById('adminPostEventDate').value : null;
+            const deadline = document.getElementById('adminPostDeadline').value;
+            const venue = document.getElementById('adminPostVenue').value;
+            const imageFile = document.getElementById('adminPostImage').files[0];
+
+            if (!title || !body || !type) {
+              alert('Please fill in Title, Content, and Category.');
+              return;
+            }
+
+            const fd = new FormData();
+            fd.append('title', title);
+            fd.append('body', body);
+            fd.append('type', type);
+            fd.append('campus_scope', campusScope);
+            if (campusScope === 'specific' && campusId) fd.append('campus_id', campusId);
+            if (eventDate) fd.append('event_date', eventDate);
+            if (deadline) fd.append('deadline_date', deadline);
+            if (venue) fd.append('venue', venue);
+            if (imageFile) fd.append('image', imageFile);
+
+            const res = await fetch('/api/v1/posts', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (res.ok) {
+              alert('Official post published successfully!');
+              // Reset form
+              document.getElementById('adminPostForm').reset();
+              this.adminPostType = '';
+              this.adminPostCampusScope = 'all';
+              await this.fetchAdminAnalytics();
+              await this.fetchAdminDashboard();
+            } else {
+              alert('Error: ' + (data.error || 'Could not publish post.'));
+            }
+          } catch (err) {
+            console.error('createAdminPost error:', err);
+            alert('Unexpected error. Check console.');
+          }
         },
 
         async deactivateUser(id) {
