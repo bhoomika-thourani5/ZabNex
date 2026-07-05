@@ -209,6 +209,8 @@
             </div>
           </div>
 
+          <!-- Navigation Tabs -->
+          <div class="academic-card p-2 rounded-xl mb-6 flex gap-2 overflow-x-auto">
             <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
                     :class="superTab === 'users' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'users'">
               <span class="material-symbols-outlined icon-outline text-[18px]">manage_accounts</span> User Management
@@ -222,8 +224,8 @@
               <span class="material-symbols-outlined icon-outline text-[18px]">domain</span> Campuses Config
             </button>
             <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
-                    :class="superTab === 'adminpost' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'adminpost'">
-              <span class="material-symbols-outlined icon-outline text-[18px]">post_add</span> Post as Admin
+                    :class="superTab === 'posts' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="superTab = 'posts'; isEditMode = false; fetchAdminPosts()">
+              <span class="material-symbols-outlined icon-outline text-[18px]">article</span> Post Manager
             </button>
           </div>
 
@@ -414,78 +416,149 @@
               </div>
             </div>
           </div>
-          <!-- Section: Admin Post Creation -->
-          <div x-show="superTab === 'adminpost'" class="academic-card rounded-xl p-6 mb-6">
-            <h3 class="text-lg font-bold text-primary mb-1">Publish Official Announcement</h3>
-            <p class="text-sm text-on-surface-variant mb-4">Post scholarships, jobs, internships, announcements and events directly as SZABIST Admin (no society required).</p>
-            <form @submit.prevent="createAdminPost()" enctype="multipart/form-data" id="adminPostForm" class="flex flex-col gap-4">
-              <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex-1">
-                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Title</label>
-                  <input type="text" id="adminPostTitle" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Need-Based Scholarship 2026" required>
-                </div>
-                <div class="flex-1">
-                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Content Category</label>
-                  <select id="adminPostType" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="adminPostType" required>
-                    <option value="" disabled selected>Select category</option>
-                    <option value="event">Event</option>
-                    <option value="scholarship">Scholarship</option>
-                    <option value="internship">Internship</option>
-                    <option value="job">Job</option>
-                    <option value="announcement">Announcement</option>
-                  </select>
+
+          <!-- Section: Super Admin Post Manager -->
+          <div x-show="superTab === 'posts'" class="flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-5/12">
+              <div class="academic-card rounded-xl p-6">
+                <h3 class="text-lg font-bold text-primary mb-4" x-text="isEditMode ? 'Edit Post (Admin)' : 'Create Post as Administrator'"></h3>
+                <form @submit.prevent="createAdminPost" enctype="multipart/form-data" id="adminPostCreateForm" class="flex flex-col gap-4">
+                  <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                      <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Title</label>
+                      <input type="text" name="title" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Need-Based Scholarship 2026" required>
+                    </div>
+                    <div class="flex-1">
+                      <label class="block text-sm font-semibold text-on-surface-variant mb-1">Category</label>
+                      <select name="type" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="postType" required>
+                        <option value="" disabled selected>Select category</option>
+                        <option value="event">Event</option>
+                        <option value="scholarship">Scholarship</option>
+                        <option value="internship">Internship</option>
+                        <option value="job">Job</option>
+                        <option value="announcement">Announcement</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Author Entity</label>
+                    <select name="society_id" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="postSocietyId">
+                      <option value="">SZABIST Admin (System)</option>
+                      <template x-for="soc in adminDashboard.active_societies" :key="soc.id">
+                        <option :value="soc.id" x-text="soc.name"></option>
+                      </template>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Content</label>
+                    <textarea name="body" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" rows="5" placeholder="Details about this post..." required></textarea>
+                  </div>
+
+                  <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                      <label class="block text-sm font-semibold text-on-surface-variant mb-1">Campus Scope</label>
+                      <select name="campus_scope" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="postCampusScope" required>
+                        <option value="all">All campuses</option>
+                        <option value="specific">Specific campus</option>
+                      </select>
+                    </div>
+                    <div class="flex-1" x-show="postCampusScope === 'specific'">
+                      <label class="block text-sm font-semibold text-on-surface-variant mb-1">Target Campus Block</label>
+                      <select name="campus_id" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                        <option value="" disabled selected>Select Target Block</option>
+                        <template x-for="campus in campuses" :key="campus.id">
+                          <option :value="campus.id" x-text="campus.name || ('Block ' + campus.block_number)"></option>
+                        </template>
+                      </select>
+                    </div>
+                    <div class="flex-1">
+                      <label class="block text-sm font-semibold text-on-surface-variant mb-1">Banner Graphic</label>
+                      <input type="file" name="image" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-surface-container file:text-primary hover:file:bg-surface-container-high" accept="image/*">
+                    </div>
+                  </div>
+
+                  <!-- Event details -->
+                  <div class="border border-outline-variant rounded-lg p-4 bg-surface-container-lowest mt-2" x-show="postType === 'event'">
+                    <h5 class="font-bold text-primary mb-3 flex items-center gap-1"><span class="material-symbols-outlined icon-outline text-[18px]">event</span> Event Details</h5>
+                    <div class="flex flex-col md:flex-row gap-4">
+                      <div class="flex-1">
+                        <label class="block text-sm font-semibold text-on-surface-variant mb-1">Event Date & Time</label>
+                        <input type="datetime-local" name="event_date" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                      </div>
+                      <div class="flex-1">
+                        <label class="block text-sm font-semibold text-on-surface-variant mb-1">Venue Location</label>
+                        <input type="text" name="venue" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Clifton Seminar Room">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Deadline details -->
+                  <div class="border border-outline-variant rounded-lg p-4 bg-surface-container-lowest mt-2" x-show="['scholarship', 'internship', 'job'].includes(postType)">
+                    <h5 class="font-bold text-academic-red mb-3 flex items-center gap-1"><span class="material-symbols-outlined icon-outline text-[18px]">alarm</span> Application Deadline</h5>
+                    <div class="w-full md:w-1/2 pr-2">
+                      <label class="block text-sm font-semibold text-on-surface-variant mb-1">Deadline Date & Time</label>
+                      <input type="datetime-local" name="deadline_date" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
+                    </div>
+                  </div>
+
+                  <div class="flex gap-2">
+                    <button type="submit" class="btn-brand flex-1 py-3 rounded-lg font-semibold flex justify-center items-center mt-4 gap-1">
+                      <span class="material-symbols-outlined icon-outline text-[18px]" x-text="isEditMode ? 'save' : 'send'"></span>
+                      <span x-text="isEditMode ? 'Save Changes' : 'Publish Post'"></span>
+                    </button>
+                    <button type="button" x-show="isEditMode" @click="cancelAdminPostEdit()" class="bg-surface-container hover:bg-surface-container-high text-on-surface flex-1 py-3 rounded-lg font-semibold flex justify-center items-center mt-4 gap-1">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="lg:w-7/12">
+              <div class="academic-card rounded-xl p-6 h-full">
+                <h3 class="text-lg font-bold text-primary mb-4">All Posts Catalog</h3>
+                <div class="overflow-x-auto rounded-lg border border-outline-variant">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th>Post Title</th>
+                        <th>Category</th>
+                        <th>Publisher / Society</th>
+                        <th>Created On</th>
+                        <th>Views</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template x-for="p in adminPosts" :key="p.id">
+                        <tr>
+                          <td class="font-semibold text-primary" x-text="p.title"></td>
+                          <td>
+                            <span class="badge-category" :class="'badge-' + p.type" x-text="p.type"></span>
+                          </td>
+                          <td class="font-medium text-on-surface-variant" x-text="p.society_name || 'SZABIST Admin'"></td>
+                          <td x-text="formatDate(p.created_at)"></td>
+                          <td class="font-medium" x-text="p.view_count"></td>
+                          <td>
+                            <div class="flex gap-2">
+                              <button class="flex items-center gap-1 text-xs font-semibold text-primary hover:bg-surface-container-low px-2 py-1 rounded transition border border-outline-variant" @click="editAdminPost(p)">
+                                <span class="material-symbols-outlined icon-outline text-[16px]">edit</span> Edit
+                              </button>
+                              <button class="flex items-center gap-1 text-xs font-semibold text-on-surface-variant hover:text-error hover:bg-error-container px-2 py-1 rounded transition border border-outline-variant" @click="deleteAdminPost(p.id)">
+                                <span class="material-symbols-outlined icon-outline text-[16px]">delete</span> Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
                 </div>
               </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Post Description / Content</label>
-                <textarea id="adminPostBody" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" rows="6" placeholder="Describe the full details, eligibility, registration link, etc..." required></textarea>
-              </div>
-
-              <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex-1">
-                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Campus Scope</label>
-                  <select id="adminPostCampusScope" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" x-model="adminPostCampusScope">
-                    <option value="all">All Campus Blocks</option>
-                    <option value="specific">Specific Block Only</option>
-                  </select>
-                </div>
-                <div class="flex-1" x-show="adminPostCampusScope === 'specific'">
-                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Select Campus Block</label>
-                  <select id="adminPostCampusId" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
-                    <template x-for="campus in campuses" :key="campus.id">
-                      <option :value="campus.id" x-text="campus.name || ('Block ' + campus.block_number)"></option>
-                    </template>
-                  </select>
-                </div>
-              </div>
-
-              <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex-1" x-show="adminPostType === 'event'">
-                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Event Date & Time</label>
-                  <input type="datetime-local" id="adminPostEventDate" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
-                </div>
-                <div class="flex-1">
-                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Deadline Date <span class="text-outline font-normal">(optional)</span></label>
-                  <input type="datetime-local" id="adminPostDeadline" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm">
-                </div>
-                <div class="flex-1">
-                  <label class="block text-sm font-semibold text-on-surface-variant mb-1">Venue <span class="text-outline font-normal">(optional)</span></label>
-                  <input type="text" id="adminPostVenue" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" placeholder="e.g. Room 5, Block 153">
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Upload Flyer / Image <span class="text-outline font-normal">(optional)</span></label>
-                <input type="file" id="adminPostImage" name="image" accept="image/*" class="w-full rounded-md border border-outline-variant bg-surface-container-low text-sm p-2 cursor-pointer">
-              </div>
-
-              <button type="submit" class="btn-brand w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
-                <span class="material-symbols-outlined icon-outline text-[18px]">publish</span> Publish Official Post
-              </button>
-            </form>
+            </div>
           </div>
-
         </div>
       </template>
 
@@ -788,12 +861,12 @@
         editingPostId: null,
         postType: '',
         postCampusScope: 'all',
-        adminPostType: '',
-        adminPostCampusScope: 'all',
         memberForm: { email: '', role: 'member' },
         societyForm: { name: '', short_code: '', description: '', campus_id: '', founder_email: '', color_hex: '#0ea5e9' },
         campusForm: { block_number: '', name: '', address: '' },
         profileForm: { name: '', description: '', color_hex: '', logo_url: '' },
+        adminPosts: [],
+        postSocietyId: '',
 
         async initApp() {
           try {
@@ -844,50 +917,97 @@
           if (res.ok) this.adminDashboard = await res.json();
         },
 
-        async createAdminPost() {
-          try {
-            const title = document.getElementById('adminPostTitle').value;
-            const body = document.getElementById('adminPostBody').value;
-            const type = this.adminPostType;
-            const campusScope = this.adminPostCampusScope;
-            const campusId = document.getElementById('adminPostCampusId') ? document.getElementById('adminPostCampusId').value : null;
-            const eventDate = document.getElementById('adminPostEventDate') ? document.getElementById('adminPostEventDate').value : null;
-            const deadline = document.getElementById('adminPostDeadline').value;
-            const venue = document.getElementById('adminPostVenue').value;
-            const imageFile = document.getElementById('adminPostImage').files[0];
+        async fetchAdminPosts() {
+          const res = await fetch('/api/v1/posts');
+          if (res.ok) this.adminPosts = await res.json();
+        },
 
-            if (!title || !body || !type) {
-              alert('Please fill in Title, Content, and Category.');
-              return;
+        editAdminPost(post) {
+          this.isEditMode = true;
+          this.editingPostId = post.id;
+          this.postType = post.type;
+          this.postCampusScope = post.campus_scope || 'all';
+          this.postSocietyId = post.society_id || '';
+          this.superTab = 'posts';
+
+          setTimeout(() => {
+            const form = document.getElementById('adminPostCreateForm');
+            if (form) {
+              if (form.elements['title']) form.elements['title'].value = post.title || '';
+              if (form.elements['body']) form.elements['body'].value = post.body || '';
+              if (form.elements['campus_id']) form.elements['campus_id'].value = post.campus_id || '';
+              if (form.elements['venue']) form.elements['venue'].value = post.venue || '';
+              
+              if (form.elements['event_date'] && post.event_date) {
+                const date = new Date(post.event_date);
+                const tzoffset = date.getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(date.getTime() - tzoffset)).toISOString().slice(0, 16);
+                form.elements['event_date'].value = localISOTime;
+              } else if (form.elements['event_date']) {
+                form.elements['event_date'].value = '';
+              }
+              
+              if (form.elements['deadline_date'] && post.deadline_date) {
+                const date = new Date(post.deadline_date);
+                const tzoffset = date.getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(date.getTime() - tzoffset)).toISOString().slice(0, 16);
+                form.elements['deadline_date'].value = localISOTime;
+              } else if (form.elements['deadline_date']) {
+                form.elements['deadline_date'].value = '';
+              }
             }
+          }, 50);
+        },
 
-            const fd = new FormData();
-            fd.append('title', title);
-            fd.append('body', body);
-            fd.append('type', type);
-            fd.append('campus_scope', campusScope);
-            if (campusScope === 'specific' && campusId) fd.append('campus_id', campusId);
-            if (eventDate) fd.append('event_date', eventDate);
-            if (deadline) fd.append('deadline_date', deadline);
-            if (venue) fd.append('venue', venue);
-            if (imageFile) fd.append('image', imageFile);
+        cancelAdminPostEdit() {
+          this.isEditMode = false;
+          this.editingPostId = null;
+          this.postType = '';
+          this.postCampusScope = 'all';
+          this.postSocietyId = '';
+          const form = document.getElementById('adminPostCreateForm');
+          if (form) form.reset();
+          this.superTab = 'posts';
+        },
 
-            const res = await fetch('/api/v1/posts', { method: 'POST', body: fd });
-            const data = await res.json();
+        async createAdminPost() {
+          const form = document.getElementById('adminPostCreateForm');
+          const formData = new FormData(form);
+          
+          if (!this.postSocietyId) {
+            formData.delete('society_id');
+          } else {
+            formData.set('society_id', this.postSocietyId);
+          }
+
+          try {
+            const url = this.isEditMode ? `/api/v1/posts/${this.editingPostId}` : '/api/v1/posts';
+            const method = this.isEditMode ? 'PUT' : 'POST';
+            const res = await fetch(url, {
+              method: method,
+              body: formData
+            });
+
             if (res.ok) {
-              alert('Official post published successfully!');
-              // Reset form
-              document.getElementById('adminPostForm').reset();
-              this.adminPostType = '';
-              this.adminPostCampusScope = 'all';
-              await this.fetchAdminAnalytics();
-              await this.fetchAdminDashboard();
+              alert(this.isEditMode ? 'Post updated successfully!' : 'Post published successfully to feed!');
+              this.cancelAdminPostEdit();
+              this.fetchAdminPosts();
             } else {
-              alert('Error: ' + (data.error || 'Could not publish post.'));
+              const data = await res.json();
+              alert(data.error || 'Failed to publish post.');
             }
           } catch (err) {
-            console.error('createAdminPost error:', err);
-            alert('Unexpected error. Check console.');
+            console.error(err);
+            alert('Connection error uploading post.');
+          }
+        },
+
+        async deleteAdminPost(postId) {
+          if (!confirm('Are you sure you want to delete this post?')) return;
+          const res = await fetch(`/api/v1/posts/${postId}`, { method: 'DELETE' });
+          if (res.ok) {
+            alert('Post deleted.');
+            this.fetchAdminPosts();
           }
         },
 
