@@ -221,8 +221,8 @@
           </div>
         </div>
 
-        <!-- User Info -->
-        <div class="flex items-center gap-2 py-1 px-3 bg-surface-container rounded-full border border-outline-variant">
+        <!-- User Info with Dropdown / Action -->
+        <div class="flex items-center gap-2 py-1 px-3 bg-surface-container rounded-full border border-outline-variant cursor-pointer hover:bg-surface-container-high transition" @click="openProfileModal(user.id)">
           <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold" x-text="user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'"></div>
           <div class="flex flex-col">
             <span class="text-xs font-semibold text-on-surface leading-tight" x-text="user.full_name"></span>
@@ -306,6 +306,10 @@
                 :class="activeTab === 'bookmarks' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="setTab('bookmarks')">
           <span class="material-symbols-outlined icon-outline text-[18px]">bookmark</span> Bookmarks
         </button>
+        <button class="flex-1 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-colors" 
+                :class="activeTab === 'societies' ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-container'" @click="setTab('societies')">
+          <span class="material-symbols-outlined icon-outline text-[18px]">groups</span> Societies
+        </button>
       </div>
 
       <!-- Loading State -->
@@ -326,7 +330,7 @@
       </template>
 
       <!-- Feed List / Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-show="!loading" x-cloak>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-show="!loading && activeTab !== 'societies'" x-cloak>
         <template x-for="post in posts" :key="post.id">
           <div class="academic-card academic-card-hover rounded-xl flex flex-col overflow-hidden h-full cursor-pointer" @click="openPostDetail(post.id)">
             
@@ -388,6 +392,33 @@
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Societies Directory tab view -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-show="!loading && activeTab === 'societies'" x-cloak>
+        <template x-for="soc in societies" :key="soc.id">
+          <div class="academic-card rounded-xl overflow-hidden flex flex-col border-t-4" :style="'border-color: ' + (soc.color_hex || '#003b46')">
+            <div class="p-6 flex flex-col flex-grow">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                  <template x-if="soc.logo_url">
+                    <img :src="soc.logo_url" class="w-12 h-12 rounded-full object-cover border border-outline-variant">
+                  </template>
+                  <template x-if="!soc.logo_url">
+                    <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant text-primary font-bold" x-text="soc.short_code"></div>
+                  </template>
+                  <div>
+                    <h3 class="text-lg font-bold text-primary" x-text="soc.name"></h3>
+                    <span class="text-xs font-semibold text-on-surface-variant uppercase" x-text="'Code: ' + soc.short_code"></span>
+                  </div>
+                </div>
+                <span class="text-xs font-semibold px-2 py-1 bg-surface-container rounded-md" x-text="soc.campus ? soc.campus.name : 'Unknown Campus'"></span>
+              </div>
+              
+              <p class="text-sm text-on-surface-variant flex-grow" x-text="soc.description || 'No description provided for this society.'"></p>
             </div>
           </div>
         </template>
@@ -493,6 +524,80 @@
     </div>
   </div>
 
+  <!-- 4. Profile Modal -->
+  <div class="fixed inset-0 bg-ink bg-opacity-50 flex items-center justify-center z-[100] p-4 backdrop-blur-sm" x-show="profileModalOpen" x-transition x-cloak style="display: none;">
+    <div class="academic-card rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl" @click.stop>
+      
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center p-4 border-b border-outline-variant bg-surface-bright">
+        <h2 class="text-lg font-bold text-primary flex items-center gap-2">
+          <span class="material-symbols-outlined">account_circle</span> My Profile Settings
+        </h2>
+        <button class="text-on-surface-variant hover:text-error rounded-full p-1 hover:bg-surface-container transition" @click="profileModalOpen = false">
+          <span class="material-symbols-outlined icon-outline">close</span>
+        </button>
+      </div>
+      
+      <!-- Modal Body -->
+      <div class="flex-grow overflow-y-auto p-6">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Left: User details and memberships -->
+          <div class="md:w-1/2 flex flex-col gap-4">
+            <div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 text-sm flex flex-col gap-3">
+              <div>
+                <span class="font-semibold text-on-surface-variant block text-xs uppercase tracking-wider">Email Address</span>
+                <span class="font-medium text-on-surface text-base" x-text="profileData.email"></span>
+              </div>
+              <div>
+                <span class="font-semibold text-on-surface-variant block text-xs uppercase tracking-wider">Campus Block</span>
+                <span class="font-medium text-primary text-base" x-text="profileData.campus ? profileData.campus.name : 'Not assigned'"></span>
+              </div>
+              <div>
+                <span class="font-semibold text-on-surface-variant block text-xs uppercase tracking-wider">System Role</span>
+                <span class="font-medium text-on-surface capitalize text-base" x-text="profileData.role ? profileData.role.replace('_', ' ') : 'Student'"></span>
+              </div>
+            </div>
+
+            <!-- Society members catalog -->
+            <div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 text-sm flex flex-col">
+              <span class="font-semibold text-on-surface-variant block text-xs uppercase tracking-wider mb-2 border-b border-outline-variant pb-1">Society Memberships</span>
+              <template x-if="!profileData.society_members || profileData.society_members.length === 0">
+                <span class="text-on-surface-variant italic">No active memberships.</span>
+              </template>
+              <div class="flex flex-col gap-2 max-h-40 overflow-y-auto">
+                <template x-for="membership in profileData.society_members" :key="membership.id">
+                  <div class="flex justify-between items-center bg-surface-container p-2 rounded">
+                    <span class="font-bold text-primary" x-text="membership.society.name"></span>
+                    <span class="text-xs uppercase bg-[#fed65b] text-[#241a00] px-2 py-0.5 rounded font-semibold" x-text="membership.role"></span>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Update Form -->
+          <div class="md:w-1/2">
+            <h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-3 border-b border-outline-variant pb-1">Edit Information</h3>
+            <form @submit.prevent="updateProfile()" class="flex flex-col gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Full Name</label>
+                <input type="text" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm text-on-surface" x-model="profileForm.full_name" required>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-on-surface-variant mb-1">Avatar URL Link</label>
+                <input type="text" class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm text-on-surface" placeholder="e.g. /uploads/avatar.png" x-model="profileForm.avatar_url">
+              </div>
+              <button type="submit" class="btn-brand w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
+                <span class="material-symbols-outlined icon-outline text-[18px]">save</span> Save Profile
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <script>
     function feedApp() {
       return {
@@ -504,10 +609,16 @@
         unreadCount: 0,
         attendees: [],
         
+        // Profile & Societies state
+        profileModalOpen: false,
+        profileData: {},
+        profileForm: { full_name: '', avatar_url: '' },
+        societies: [],
+        
         // Active Filter States
         activeCampusId: '',
         activeCategory: '',
-        activeTab: 'feed', // feed, trending, deadlines, bookmarks
+        activeTab: 'feed', // feed, trending, deadlines, bookmarks, societies
         searchQuery: '',
         
         loading: false,
@@ -599,6 +710,61 @@
           }
         },
 
+        async fetchSocieties() {
+          this.loading = true;
+          try {
+            const res = await fetch('/api/v1/societies');
+            if (res.ok) {
+              this.societies = await res.json();
+            }
+          } catch (err) {
+            console.error('Fetch societies error:', err);
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async openProfileModal(userId) {
+          try {
+            const res = await fetch(`/api/v1/users/${userId}`);
+            if (res.ok) {
+              this.profileData = await res.json();
+              this.profileForm = {
+                full_name: this.profileData.full_name || '',
+                avatar_url: this.profileData.avatar_url || ''
+              };
+              this.profileModalOpen = true;
+            }
+          } catch (err) {
+            console.error('Error fetching user profile:', err);
+          }
+        },
+
+        async updateProfile() {
+          try {
+            const res = await fetch(`/api/v1/users/${this.profileData.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.profileForm)
+            });
+            if (res.ok) {
+              alert('Profile updated successfully!');
+              this.profileModalOpen = false;
+              // Refresh logged in user context
+              const meRes = await fetch('/api/v1/auth/me');
+              if (meRes.ok) {
+                const data = await meRes.json();
+                this.user = data.user;
+              }
+            } else {
+              const data = await res.json();
+              alert(data.error || 'Failed to update profile.');
+            }
+          } catch (err) {
+            console.error('Error updating profile:', err);
+          }
+        },
+
         setCampus(id) {
           this.activeCampusId = id;
           this.activeTab = 'feed';
@@ -613,7 +779,11 @@
 
         setTab(tab) {
           this.activeTab = tab;
-          this.fetchPosts();
+          if (tab === 'societies') {
+            this.fetchSocieties();
+          } else {
+            this.fetchPosts();
+          }
         },
 
         async openPostDetail(id) {
