@@ -27,7 +27,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
     const { id } = req.params;
     const sessionUser = req.session.user;
 
-    if (sessionUser.role !== 'super_admin' && sessionUser.id !== id) {
+    if (sessionUser.role !== 'super_admin' && String(sessionUser.id) !== String(id)) {
       return res.status(403).json({ error: 'Forbidden: You can only view your own profile.' });
     }
 
@@ -68,7 +68,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     const { id } = req.params;
     const sessionUser = req.session.user;
 
-    if (sessionUser.id !== id) {
+    if (sessionUser.role !== 'super_admin' && String(sessionUser.id) !== String(id)) {
       return res.status(403).json({ error: 'Forbidden: You can only edit your own profile.' });
     }
 
