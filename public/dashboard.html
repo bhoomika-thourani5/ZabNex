@@ -353,7 +353,7 @@
           <div x-show="superTab === 'campuses'" class="flex flex-col lg:flex-row gap-6">
             <div class="lg:w-5/12">
               <div class="academic-card rounded-xl p-6">
-                <h3 class="text-lg font-bold text-primary mb-4">Add Campus Block</h3>
+                <h3 class="text-lg font-bold text-primary mb-4" x-text="isCampusEditMode ? 'Edit Campus Block' : 'Add Campus Block'"></h3>
                 <form @submit.prevent="createCampus" class="flex flex-col gap-4">
                   <div>
                     <label class="block text-sm font-semibold text-on-surface-variant mb-1">Block Number</label>
@@ -367,9 +367,15 @@
                     <label class="block text-sm font-semibold text-on-surface-variant mb-1">Address Details</label>
                     <textarea class="w-full rounded-md border-outline-variant focus:border-primary focus:ring-primary shadow-sm text-sm" rows="3" placeholder="Specify full block street address..." x-model="campusForm.address"></textarea>
                   </div>
-                  <button type="submit" class="btn-brand-secondary w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
-                    <span class="material-symbols-outlined icon-outline text-[18px]">domain_add</span> Add Campus Block
-                  </button>
+                  <div class="flex gap-2">
+                    <button type="submit" class="btn-brand-secondary flex-1 py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
+                      <span class="material-symbols-outlined icon-outline text-[18px]" x-text="isCampusEditMode ? 'save' : 'domain_add'"></span>
+                      <span x-text="isCampusEditMode ? 'Save Changes' : 'Add Campus Block'"></span>
+                    </button>
+                    <button type="button" x-show="isCampusEditMode" @click="cancelCampusEdit()" class="bg-surface-container hover:bg-surface-container-high text-on-surface flex-1 py-3 rounded-lg font-semibold flex justify-center items-center mt-2 gap-1">
+                      Cancel
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -384,6 +390,7 @@
                         <th>Block Number</th>
                         <th>Name</th>
                         <th>Address</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -392,6 +399,11 @@
                           <td class="font-semibold text-primary" x-text="'Block ' + camp.block_number"></td>
                           <td class="font-medium text-on-surface" x-text="camp.name"></td>
                           <td class="text-on-surface-variant text-xs" x-text="camp.address"></td>
+                          <td>
+                            <button class="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-container px-2 py-1 rounded transition border border-outline-variant" @click="editCampus(camp)">
+                              <span class="material-symbols-outlined icon-outline text-[16px]">edit</span> Edit
+                            </button>
+                          </td>
                         </tr>
                       </template>
                     </tbody>
@@ -455,9 +467,9 @@
             </button>
           </div>
 
-          <!-- Section: Create Post Form -->
+           <!-- Section: Create Post Form -->
           <div x-show="socTab === 'create'" class="academic-card rounded-xl p-6 mb-6">
-            <h3 class="text-lg font-bold text-primary mb-4">Create Post on Behalf of Society</h3>
+            <h3 class="text-lg font-bold text-primary mb-4" x-text="isEditMode ? 'Edit Post' : 'Create Post on Behalf of Society'"></h3>
             <form @submit.prevent="createPost(activeSoc)" enctype="multipart/form-data" id="postCreateForm" class="flex flex-col gap-4">
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-1">
@@ -529,9 +541,15 @@
                 </div>
               </div>
 
-              <button type="submit" class="btn-brand w-full py-3 rounded-lg font-semibold flex justify-center items-center mt-4 gap-1">
-                <span class="material-symbols-outlined icon-outline text-[18px]">send</span> Publish Post
-              </button>
+              <div class="flex gap-2">
+                <button type="submit" class="btn-brand flex-1 py-3 rounded-lg font-semibold flex justify-center items-center mt-4 gap-1">
+                  <span class="material-symbols-outlined icon-outline text-[18px]" x-text="isEditMode ? 'save' : 'send'"></span>
+                  <span x-text="isEditMode ? 'Save Changes' : 'Publish Post'"></span>
+                </button>
+                <button type="button" x-show="isEditMode" @click="cancelPostEdit()" class="bg-surface-container hover:bg-surface-container-high text-on-surface flex-1 py-3 rounded-lg font-semibold flex justify-center items-center mt-4 gap-1">
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
 
@@ -561,9 +579,14 @@
                       <td class="font-medium" x-text="p.view_count"></td>
                       <td class="font-medium" x-text="p.rsvp_count"></td>
                       <td>
-                        <button class="flex items-center gap-1 text-xs font-semibold text-on-surface-variant hover:text-error hover:bg-error-container px-2 py-1 rounded transition border border-outline-variant" @click="archivePost(p.id, activeSoc)">
-                          <span class="material-symbols-outlined icon-outline text-[16px]">archive</span> Archive
-                        </button>
+                        <div class="flex gap-2">
+                          <button class="flex items-center gap-1 text-xs font-semibold text-primary hover:bg-surface-container-low px-2 py-1 rounded transition border border-outline-variant" @click="editPost(p)">
+                            <span class="material-symbols-outlined icon-outline text-[16px]">edit</span> Edit
+                          </button>
+                          <button class="flex items-center gap-1 text-xs font-semibold text-on-surface-variant hover:text-error hover:bg-error-container px-2 py-1 rounded transition border border-outline-variant" @click="archivePost(p.id, activeSoc)">
+                            <span class="material-symbols-outlined icon-outline text-[16px]">archive</span> Archive
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   </template>
@@ -685,6 +708,10 @@
         socTab: 'create',
         
         // Forms states
+        isCampusEditMode: false,
+        editingCampusId: null,
+        isEditMode: false,
+        editingPostId: null,
         postType: '',
         postCampusScope: 'all',
         memberForm: { email: '', role: 'member' },
@@ -763,20 +790,38 @@
           }
         },
 
+        editCampus(camp) {
+          this.isCampusEditMode = true;
+          this.editingCampusId = camp.id;
+          this.campusForm = {
+            block_number: camp.block_number,
+            name: camp.name || '',
+            address: camp.address || ''
+          };
+        },
+
+        cancelCampusEdit() {
+          this.isCampusEditMode = false;
+          this.editingCampusId = null;
+          this.campusForm = { block_number: '', name: '', address: '' };
+        },
+
         async createCampus() {
-          const res = await fetch('/api/v1/campuses', {
-            method: 'POST',
+          const url = this.isCampusEditMode ? `/api/v1/campuses/${this.editingCampusId}` : '/api/v1/campuses';
+          const method = this.isCampusEditMode ? 'PUT' : 'POST';
+          const res = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(this.campusForm)
           });
           if (res.ok) {
-            alert('Campus block added.');
-            this.campusForm = { block_number: '', name: '', address: '' };
+            alert(this.isCampusEditMode ? 'Campus block updated successfully.' : 'Campus block added.');
+            this.cancelCampusEdit();
             const cres = await fetch('/api/v1/campuses');
             if (cres.ok) this.campuses = await cres.json();
           } else {
             const data = await res.json();
-            alert(data.error || 'Failed to add campus block.');
+            alert(data.error || 'Failed to save campus block.');
           }
         },
 
@@ -894,6 +939,54 @@
           }
         },
 
+        editPost(post) {
+          this.isEditMode = true;
+          this.editingPostId = post.id;
+          this.postType = post.type;
+          this.postCampusScope = post.campus_scope || 'all';
+          this.socTab = 'create';
+
+          // Populating form fields directly in the DOM elements since the form uses standard FormData
+          setTimeout(() => {
+            const form = document.getElementById('postCreateForm');
+            if (form) {
+              if (form.elements['title']) form.elements['title'].value = post.title || '';
+              if (form.elements['body']) form.elements['body'].value = post.body || '';
+              if (form.elements['campus_id']) form.elements['campus_id'].value = post.campus_id || '';
+              if (form.elements['venue']) form.elements['venue'].value = post.venue || '';
+              
+              if (form.elements['event_date'] && post.event_date) {
+                // Convert to YYYY-MM-DDThh:mm format for datetime-local input
+                const date = new Date(post.event_date);
+                const tzoffset = date.getTimezoneOffset() * 60000; //offset in milliseconds
+                const localISOTime = (new Date(date.getTime() - tzoffset)).toISOString().slice(0, 16);
+                form.elements['event_date'].value = localISOTime;
+              } else if (form.elements['event_date']) {
+                form.elements['event_date'].value = '';
+              }
+              
+              if (form.elements['deadline_date'] && post.deadline_date) {
+                const date = new Date(post.deadline_date);
+                const tzoffset = date.getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(date.getTime() - tzoffset)).toISOString().slice(0, 16);
+                form.elements['deadline_date'].value = localISOTime;
+              } else if (form.elements['deadline_date']) {
+                form.elements['deadline_date'].value = '';
+              }
+            }
+          }, 50);
+        },
+
+        cancelPostEdit() {
+          this.isEditMode = false;
+          this.editingPostId = null;
+          this.postType = '';
+          this.postCampusScope = 'all';
+          const form = document.getElementById('postCreateForm');
+          if (form) form.reset();
+          this.socTab = 'posts';
+        },
+
         async createPost(societyId) {
           const form = document.getElementById('postCreateForm');
           const formData = new FormData(form);
@@ -901,16 +994,16 @@
           formData.append('society_id', societyId);
 
           try {
-            const res = await fetch('/api/v1/posts', {
-              method: 'POST',
+            const url = this.isEditMode ? `/api/v1/posts/${this.editingPostId}` : '/api/v1/posts';
+            const method = this.isEditMode ? 'PUT' : 'POST';
+            const res = await fetch(url, {
+              method: method,
               body: formData
             });
 
             if (res.ok) {
-              alert('Post published successfully to feed!');
-              form.reset();
-              this.postType = '';
-              this.postCampusScope = 'all';
+              alert(this.isEditMode ? 'Post updated successfully!' : 'Post published successfully to feed!');
+              this.cancelPostEdit();
               this.fetchSocietyData(societyId);
               this.socTab = 'posts';
             } else {
