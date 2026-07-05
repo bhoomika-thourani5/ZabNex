@@ -65,7 +65,7 @@ router.get('/trending', authMiddleware, async (req, res) => {
 // GET /api/v1/posts/deadlines - Stored function lookup
 router.get('/deadlines', authMiddleware, async (req, res) => {
   try {
-    const days = req.query.days ? parseInt(req.query.days) : 30;
+    const days = req.query.days ? parseInt(req.query.days) : 365;
     const { rows: deadlines } = await pool.query('SELECT * FROM get_upcoming_deadlines($1)', [days]);
     res.status(200).json(deadlines);
   } catch (error) {
