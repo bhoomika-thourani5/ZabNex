@@ -637,6 +637,9 @@
           await this.fetchSavedPostIds();
           await this.fetchNotifications();
           await this.fetchPosts();
+
+          // Auto-refresh notifications every 60 seconds
+          setInterval(() => this.fetchNotifications(), 60000);
         },
 
         async fetchCampuses() {
@@ -653,10 +656,16 @@
         },
 
         async fetchNotifications() {
-          const res = await fetch('/api/v1/notifications');
-          if (res.ok) {
-            this.notifications = await res.json();
-            this.unreadCount = this.notifications.filter(n => !n.is_read).length;
+          try {
+            const res = await fetch('/api/v1/notifications');
+            if (res.ok) {
+              this.notifications = await res.json();
+              this.unreadCount = this.notifications.filter(n => !n.is_read).length;
+            } else if (res.status !== 401) {
+              console.error('fetchNotifications: unexpected status', res.status);
+            }
+          } catch (err) {
+            console.error('fetchNotifications error:', err);
           }
         },
 
@@ -685,11 +694,16 @@
                 this.posts = data.map(item => ({
                   id: item.id,
                   title: item.title,
-                  body: `Time-sensitive opportunity deadline alert. Details are available on the full event post inside the feed catalog.`,
+                  body: item.body || `Time-sensitive opportunity — deadline approaching. Click to view full details.`,
                   type: item.type,
                   deadline_date: item.deadline_date,
-                  view_count: 0,
-                  rsvp_count: 0
+                  image_url: item.image_url || null,
+                  society_name: item.society_name || null,
+                  society_logo: item.society_logo || null,
+                  society_color: item.society_color || null,
+                  campus_name: item.campus_name || null,
+                  view_count: item.view_count || 0,
+                  rsvp_count: item.rsvp_count || 0
                 }));
               } else {
                 this.posts = data;
